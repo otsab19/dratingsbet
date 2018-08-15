@@ -20,6 +20,7 @@ from lxml import etree
 
 # define some constants
 HEADER_FOOTBALL = ['Date','Away','Home','Odds to Win','ML Prediction','Score Proj','Total Goals']
+HEADER_CANADA_FOOTBALL = ['Date','Away','Home','Odds to Win','ML Prediction','Score Proj','Total Goals']
 PATH = ''
 MAP = {
         'ncaa-football-predictions':'ncaa(self)',
@@ -34,10 +35,10 @@ class DratingsBet():
         self.map_league = json.load(open('leagues.config'))
 
     def scrape_links(self):
-        res = requests.get('https://www.dratings.com/')
-        html_sel = html.fromstring(res.content)
-        self.links = html_sel.xpath('//table[2]//tr/td/center/a/@href')
-        self.leagues = html_sel.xpath('//table[2]//tr/td/center/a/text()')
+        #res = requests.get('https://www.dratings.com/')
+        #html_sel = html.fromstring(res.content)
+        #self.links = html_sel.xpath('//table[2]//tr/td/center/a/@href')
+        #self.leagues = html_sel.xpath('//table[2]//tr/td/center/a/text()')
         res_ca = requests.get('https://ca.dratings.com/')
         html_sel = html.fromstring(res_ca.content)
         ca_links = html_sel.xpath('(//ul[@class="dropdown-menu"])[4]/li/a/@href')
@@ -182,12 +183,12 @@ class DratingsBet():
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
         table = html_sel.xpath('//table')
-        tab_tmp = list(table)
-        for i, tab in enumerate(table):
-            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
-            if headers != HEADER_FOOTBALL:
-                tab_tmp.remove(tab)
-        table = tab_tmp
+        # tab_tmp = list(table)
+        # for i, tab in enumerate(table):
+        #     headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+        #     if headers != HEADER_FOOTBALL:
+        #         tab_tmp.remove(tab)
+        # table = tab_tmp
         for index in range(len(table)):
             # particular tr
             data = html_sel.xpath(
@@ -205,31 +206,32 @@ class DratingsBet():
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
                     try:
+                        li['sport'] = "Football"
                         li['League'] = league
                         if i == 0:
                             li['Date'] = value[0]
                             if re.match(r'^\d.*', value[3]):
-                                li['Hometeam'] = value[3]
-                                li['Pred1'] = value[4]
-                                li['Predtotalpointshome'] = value[5]
-                                li['Predtotalpoints'] = value[6]
-                            else:
                                 li['Hometeam'] = value[2]
                                 li['Pred1'] = value[3]
                                 li['Predtotalpointshome'] = value[4]
                                 li['Predtotalpoints'] = value[5]
+                            else:
+                                li['Hometeam'] = value[3]
+                                li['Pred1'] = value[4]
+                                li['Predtotalpointshome'] = value[5]
+                                li['Predtotalpoints'] = value[6]
 
                         elif i == 1:
-                            li['AwayTeam'] = value[0]
+                            li['Awayteam'] = value[0]
                             li['Pred2'] = value[1]
                             li['Predtotalpointsaway'] = value[2]
 
                     except:
                         pass
-                    try:   
-                        self.parse(li) 
-                    except:
-                        pass
+                try:   
+                    self.parse(li) 
+                except:
+                    pass
 
     def parse(self, li):
         pudb.set_trace()
