@@ -50,39 +50,65 @@ class DratingsBet():
         if date:
             date = date[0]
 
-        for link,league in zip(self.links,self.leagues):
+        for link, league in zip(self.links, self.leagues):
             res = requests.get(link)
             html_sel = html.fromstring(res.content)
-            tr = html_sel.xpath('//table[1]//tr')
+            tr = html_sel.xpath('//table[1]//tr[position()>1]')
             th = html_sel.xpath('//table[1]//tr/th//text()')
             obj = {}
             for i, nod in enumerate(tr):
                 val_string = etree.tostring(nod)
                 val_ele = html.fromstring(val_string)
                 value = val_ele.xpath('//tr/td//text()')
-                for val,head in zip(value,th):
+                for val, head in zip(value, th):
                     if head == "Team":
                         obj['Teamname'] = val
                     elif head == 'Country':
                         obj['Country'] = val
                     elif head == 'Rating':
-                        obj['ELOpointsDII'] = val
+                        obj['ELOpointsDII'] = re.sub(r'\(.*\)', '', val)
                     elif 'Inference' in head:
-                        obj['ELOpointsInference'] = val
+                        obj['ELOpointsInference'] = re.sub(r'\(.*\)', '', val)
                     elif 'Standard' in head:
-                        obj['ELOpointsStandard'] = re.sub(r'\(.*\)','',val)
+                        obj['ELOpointsStandard'] = re.sub(r'\(.*\)', '', val)
                     elif 'Aegis' in head:
-                        obj['ELOpointsAegis'] = val
+                        obj['ELOpointsAegis'] = re.sub(r'\(.*\)', '', val)
                     elif 'Vegas' in head:
-                        obj['ELOpointsVegas'] = val
+                        obj['ELOpointsVegas'] = re.sub(r'\(.*\)', '', val)
 
                     obj['Source'] = 'Dratings'
                     obj['Sport'] = league
                     obj['Date'] = date
-                print(obj)
-                open('file.txt','a').write(str(obj))
 
-    
+                root = Element('Matches')
+                Match = SubElement(root, 'Match')
+
+                for elem in obj:
+                    xml_attr = SubElement(Match, elem)
+                    xml_attr.text = obj[elem]
+                    filename = obj['Teamname']+'- ratings'
+                try:
+                    PATH = os.path.join(os.getcwd(), obj['Sport'])
+                    os.makedirs(PATH)
+                except OSError as exc:
+                    if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+                        pass
+                    else:
+                        raise
+                try:
+                    PATH = os.path.join(os.getcwd(), obj['Sport'], obj['Sport'])
+                    os.makedirs(PATH)
+                except OSError as exc:
+                    if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+                        pass
+                    else:
+                        raise
+                # convert to lxml element to string
+                root_string = tostring(root)
+                with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
+                    print(filename)
+                    fl.write(indent(root_string.decode('utf-8')))
+ 
     def parse_ratings(self, obj):
         pass
         
@@ -138,6 +164,60 @@ class DratingsBet():
                         else:
                             li['PredX'] = value[1]
                             # li['DawML'] = value[2]
+                    except:
+                        pass
+                    try:   
+                        self.parse(li) 
+                    except:
+                        pass
+
+    def parse_canada_fotball(self, link, league):
+        res = requests.get(link)
+        html_sel = html.fromstring(res.content)
+        # check tables for prediction table
+        table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if headers != HEADER_FOOTBALL:
+                tab_tmp.remove(tab)
+        table = tab_tmp
+        for index in range(len(table)):
+            # particular tr
+            data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>1]')
+            td = []
+            for i in range(len(data)//2):
+                t = []
+                t = data[i*2:i*2+2:1]
+                td.append(t)
+            for node in td:
+                li = {}
+                for i, nod in enumerate(node):
+                    val_string = etree.tostring(nod)
+                    val_ele = html.fromstring(val_string)
+                    value = val_ele.xpath('//tr//td//text()')
+                    print(value)
+                    try:
+                        li['League'] = league
+                        if i == 0:
+                            li['Date'] = value[0]
+                            if re.match(r'^\d.*', value[3]):
+                                li['Hometeam'] = value[3]
+                                li['Pred1'] = value[4]
+                                li['Predtotalpointshome'] = value[5]
+                                li['Predtotalpoints'] = value[6]
+                            else:
+                                li['Hometeam'] = value[2]
+                                li['Pred1'] = value[3]
+                                li['Predtotalpointshome'] = value[4]
+                                li['Predtotalpoints'] = value[5]
+
+                        elif i == 1:
+                            li['AwayTeam'] = value[0]
+                            li['Pred2'] = value[1]
+                            li['Predtotalpointsaway'] = value[2]
+
                     except:
                         pass
                     try:   
