@@ -38,6 +38,12 @@ class DratingsBet():
         html_sel = html.fromstring(res.content)
         self.links = html_sel.xpath('//table[2]//tr/td/center/a/@href')
         self.leagues = html_sel.xpath('//table[2]//tr/td/center/a/text()')
+        res_ca = requests.get('https://ca.dratings.com/')
+        html_sel = html.fromstring(res_ca.content)
+        ca_links = html_sel.xpath('(//ul[@class="dropdown-menu"])[4]/li/a/@href')
+        ca_text = html_sel.xpath('(//ul[@class="dropdown-menu"])[4]/li/a/text()')
+        self.links = self.links + ca_links
+        self.leagues = self.leagues + ca_text
         print(self.links)
 
     def scrape_ratings_links(self):
@@ -88,7 +94,7 @@ class DratingsBet():
                     xml_attr.text = obj[elem]
                     filename = obj['Teamname']+'- ratings'
                 try:
-                    PATH = os.path.join(os.getcwd(), obj['Sport'])
+                    PATH = os.path.join(os.getcwd(), 'Rankings')
                     os.makedirs(PATH)
                 except OSError as exc:
                     if exc.errno == errno.EEXIST and os.path.isdir(PATH):
@@ -96,7 +102,7 @@ class DratingsBet():
                     else:
                         raise
                 try:
-                    PATH = os.path.join(os.getcwd(), obj['Sport'], obj['Sport'])
+                    PATH = os.path.join(os.getcwd(), 'Rankings', obj['Sport'])
                     os.makedirs(PATH)
                 except OSError as exc:
                     if exc.errno == errno.EEXIST and os.path.isdir(PATH):
@@ -262,8 +268,12 @@ class DratingsBet():
 
 
 if __name__ == "__main__":
-    #ratings = DratingsBet()
-    #ratings.scrape_links()
-    #ratings.start_requests()
-    rankings = DratingsBet()
-    rankings.scrape_ratings_links()
+    inp = input('Enter type')
+    if inp.lower() == "rank":
+        rankings = DratingsBet()
+        rankings.scrape_ratings_links()
+    elif inp.lower() == "prediction":
+        ratings = DratingsBet()
+        ratings.scrape_links()
+        ratings.start_requests()
+    
