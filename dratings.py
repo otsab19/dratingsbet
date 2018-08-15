@@ -21,12 +21,18 @@ from lxml import etree
 # define some constants
 HEADER_FOOTBALL = ['Date','Away','Home','Odds to Win','ML Prediction','Score Proj','Total Goals']
 PATH = ''
+MAP = {
+        'ncaa-football-predictions':'ncaa(self)',
+        'canadian-football-league-predictions':'cflp(self)',
 
+        }
 class DratingsBet():
 
     def __init__(self):
         self.links = []
         self.leagues = []
+        self.map_league = json.load(open('leagues.config'))
+
     def scrape_links(self):
         res = requests.get('https://www.dratings.com/')
         html_sel = html.fromstring(res.content)
@@ -34,65 +40,110 @@ class DratingsBet():
         self.leagues = html_sel.xpath('//table[2]//tr/td/center/a/text()')
         print(self.links)
 
-    def start_requests(self):
-        for links,league in zip(self.links,self.leagues):
-            res = requests.get(links)
+    def scrape_ratings_links(self):
+        res = requests.get('https://www.dratings.com/')
+        html_sel = html.fromstring(res.content)
+        self.links = html_sel.xpath('//table[1]//tr//td/a/@href')
+        self.leagues = html_sel.xpath('//table[1]//tr//td/a/text()')
+        date = html_sel.xpath('//*[@class="entry-content"]/p//span/text()')
+        date = [dt for dt in date if re.match(r'\d.*',dt)]
+        if date:
+            date = date[0]
+
+        for link,league in zip(self.links,self.leagues):
+            res = requests.get(link)
             html_sel = html.fromstring(res.content)
-            # check tables for prediction table
-            table = html_sel.xpath('//table')
-            tab_tmp = list(table)
-            for i, tab in enumerate(table):
-                headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
-                if headers != HEADER_FOOTBALL:
-                    tab_tmp.remove(tab)
-            table = tab_tmp
-            for index in range(len(table)):
-                # particular tr
-                data = html_sel.xpath('//table['+str(index+1)+']//tr[position()>1]')
-                td = []
-                for i in range(len(data)//3):
-                    t = []
-                    t = data[i*3:i*3+3:1]
-                    td.append(t)
-                for node in td:
-                    li = {}
-                    for i, nod in enumerate(node):
-                        val_string = etree.tostring(nod)
-                        val_ele = html.fromstring(val_string)
-                        value = val_ele.xpath('//tr/td//text()')
-                        print(value)
-                        try:
-                            li['sport'] = "Soccer"
-                            li['League'] = league 
-                            if i == 0:
-                                li['Date'] = value[0]
-                                li['Hometeam'] = value[2]
-                                li['Awayteam'] = value[1]
-                                li['Pred1'] = value[4]
-                                #li['HomeTeamML'] = value[5]
-                                li['Predtotalpointshome'] = value[6]
-                                li['Predtotalpoints'] = value[7]
-                            elif i==1:
-                                li['Pred2'] = value[1]
-                                #li['AwayTeamML'] = value[2]
-                                li['Predtotalpointsaway'] = value[3]
-                            else:
-                                li['PredX'] = value[1]
-                                #li['DawML'] = value[2]
-                        except:
-                            pass
-                try:   
-                    self.parse(li) 
-                except:
-                    pass
-            # for node in data:
-            #    # convert to string
-            #    val_string = etree.tostring(node)
-            #    # to element
-            #    val_ele = html.fromstring(val_string)
-            #    # extract list of text from td
-            #    value = val_ele.xpath('//tr/td//text()')
-            #    print(value)
+            tr = html_sel.xpath('//table[1]//tr')
+            th = html_sel.xpath('//table[1]//tr/th//text()')
+            obj = {}
+            for i, nod in enumerate(tr):
+                val_string = etree.tostring(nod)
+                val_ele = html.fromstring(val_string)
+                value = val_ele.xpath('//tr/td//text()')
+                for val,head in zip(value,th):
+                    if head == "Team":
+                        obj['Teamname'] = val
+                    elif head == 'Country':
+                        obj['Country'] = val
+                    elif head == 'Rating':
+                        obj['ELOpointsDII'] = val
+                    elif 'Inference' in head:
+                        obj['ELOpointsInference'] = val
+                    elif 'Standard' in head:
+                        obj['ELOpointsStandard'] = re.sub(r'\(.*\)','',val)
+                    elif 'Aegis' in head:
+                        obj['ELOpointsAegis'] = val
+                    elif 'Vegas' in head:
+                        obj['ELOpointsVegas'] = val
+
+                    obj['Source'] = 'Dratings'
+                    obj['Sport'] = league
+                    obj['Date'] = date
+                print(obj)
+                open('file.txt','a').write(str(obj))
+
+    
+    def parse_ratings(self, obj):
+        pass
+        
+
+    def start_requests(self):
+        for links, league in zip(self.links, self.leagues):
+            pudb.set_trace()
+            eval('self.' + self.map_league[league] +
+                '(' + '"' + links + '"' + ', ' + '"' + league + '"' + ')')
+
+    def parse_football(self, link, league):
+        res = requests.get(link)
+        html_sel = html.fromstring(res.content)
+        # check tables for prediction table
+        table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if headers != HEADER_FOOTBALL:
+                tab_tmp.remove(tab)
+        table = tab_tmp
+        for index in range(len(table)):
+            # particular tr
+            data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>1]')
+            td = []
+            for i in range(len(data)//3):
+                t = []
+                t = data[i*3:i*3+3:1]
+                td.append(t)
+            for node in td:
+                li = {}
+                for i, nod in enumerate(node):
+                    val_string = etree.tostring(nod)
+                    val_ele = html.fromstring(val_string)
+                    value = val_ele.xpath('//tr/td//text()')
+                    print(value)
+                    try:
+                        li['sport'] = "Soccer"
+                        li['League'] = league 
+                        if i == 0:
+                            li['Date'] = value[0]
+                            li['Hometeam'] = value[2]
+                            li['Awayteam'] = value[1]
+                            li['Pred1'] = value[4]
+                            # li['HomeTeamML'] = value[5]
+                            li['Predtotalpointshome'] = value[6]
+                            li['Predtotalpoints'] = value[7]
+                        elif i == 1:
+                            li['Pred2'] = value[1]
+                            # li['AwayTeamML'] = value[2]
+                            li['Predtotalpointsaway'] = value[3]
+                        else:
+                            li['PredX'] = value[1]
+                            # li['DawML'] = value[2]
+                    except:
+                        pass
+                    try:   
+                        self.parse(li) 
+                    except:
+                        pass
 
     def parse(self, li):
         pudb.set_trace()
@@ -110,20 +161,20 @@ class DratingsBet():
         try:
             PATH = os.path.join(os.getcwd(), li['sport'])
             os.makedirs(PATH)
-        except OSError as exc: 
+        except OSError as exc:
             if exc.errno == errno.EEXIST and os.path.isdir(PATH):
                 pass
             else:
                 raise
         try:
-            PATH = os.path.join(os.getcwd(), li['sport'],li['league'])
+            PATH = os.path.join(os.getcwd(), li['sport'], li['League'])
             os.makedirs(PATH)
-        except OSError as exc: 
+        except OSError as exc:
             if exc.errno == errno.EEXIST and os.path.isdir(PATH):
                 pass
             else:
                 raise
-        # convert to lxml element to string    
+        # convert to lxml element to string
         root_string = tostring(root)
         with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
             print(filename)
@@ -131,6 +182,8 @@ class DratingsBet():
 
 
 if __name__ == "__main__":
-    ratings = DratingsBet()
-    ratings.scrape_links()
-    ratings.start_requests()
+    #ratings = DratingsBet()
+    #ratings.scrape_links()
+    #ratings.start_requests()
+    rankings = DratingsBet()
+    rankings.scrape_ratings_links()
