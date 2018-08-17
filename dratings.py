@@ -11,6 +11,7 @@ import json
 import csv
 import xml
 import datetime
+from datetime import timedelta
 import requests
 from bs4 import BeautifulSoup
 from dateutil.rrule import rrule, DAILY
@@ -228,6 +229,151 @@ class DratingsBet():
 
                     except:
                         pass
+                try:   
+                    self.parse(li) 
+                except:
+                    pass
+    def parse_mlb_baseball(self, link, league):
+        res = requests.get(link)
+        html_sel = html.fromstring(res.content)
+        # check tables for prediction table
+        table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
+        for index in range(len(table)):
+            # particular tr
+            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th/text()')
+            if len(headers) == 11:
+                data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>2]')
+            else:
+                data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>1]')
+
+            td = []
+            for i in range(len(data)//2):
+                t = []
+                t = data[i*2:i*2+2:1]
+                td.append(t)
+            for node in td:
+                li = {}
+                for i, nod in enumerate(node):
+                    val_string = etree.tostring(nod)
+                    val_ele = html.fromstring(val_string)
+                    value = val_ele.xpath('//tr//td//text()')
+                    print(value)
+                    if headers == 11:
+                        try:
+                            li['sport'] = "Baseball"
+                            li['League'] = league
+                            if i == 0:
+                                li['Date'] = datetime.datetime.now().strftime("%Y-%m-%d")
+                                li['Hometeam'] = value[1]
+                                li['Pred1'] = value[7]
+                                li['Predtotalpointshome'] = value[8]
+                                li['Predtotalpoints'] = value[9]
+
+                            elif i == 1:
+                                li['Awayteam'] = value[0]
+                                li['Pred2'] = value[6]
+                                li['Predtotalpointsaway'] = value[7]
+                        except:
+                            pass
+                    else:    
+                        try:
+                            li['sport'] = "Baseball"
+                            li['League'] = league
+                            if i == 0:
+                                li['Date'] = (datetime.datetime.now()-timedelta(days=11)).strftime('%Y-%M-%d') 
+                                li['Hometeam'] = value[2]
+                                li['Pred1'] = value[5]
+                                li['Predtotalpointshome'] = value[6]
+                                li['Predtotalpoints'] = value[7]
+
+                            elif i == 1:
+                                li['Awayteam'] = value[0]
+                                li['Pred2'] = value[3]
+                                li['Predtotalpointsaway'] = value[4]
+                        except:
+                            pass
+
+                try:   
+                    self.parse(li) 
+                except:
+                    pass
+
+     def parse_mls_soccer(self, link, league):
+        res = requests.get(link)
+        html_sel = html.fromstring(res.content)
+        # check tables for prediction table
+        table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
+        for index in range(len(table)):
+            # particular tr
+            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th/text()')
+            if len(headers) == 11:
+                data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>2]')
+            else:
+                data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>1]')
+
+            td = []
+            for i in range(len(data)//2):
+                t = []
+                t = data[i*2:i*2+2:1]
+                td.append(t)
+            for node in td:
+                li = {}
+                for i, nod in enumerate(node):
+                    val_string = etree.tostring(nod)
+                    val_ele = html.fromstring(val_string)
+                    value = val_ele.xpath('//tr//td//text()')
+                    print(value)
+                    if headers == 11:
+                        try:
+                            li['sport'] = "Baseball"
+                            li['League'] = league
+                            if i == 0:
+                                li['Date'] = datetime.datetime.now().strftime("%Y-%m-%d")
+                                li['Hometeam'] = value[1]
+                                li['Pred1'] = value[7]
+                                li['Predtotalpointshome'] = value[8]
+                                li['Predtotalpoints'] = value[9]
+
+                            elif i == 1:
+                                li['Awayteam'] = value[0]
+                                li['Pred2'] = value[6]
+                                li['Predtotalpointsaway'] = value[7]
+                        except:
+                            pass
+                    else:    
+                        try:
+                            li['sport'] = "Baseball"
+                            li['League'] = league
+                            if i == 0:
+                                li['Date'] = (datetime.datetime.now()-timedelta(days=11)).strftime('%Y-%M-%d') 
+                                li['Hometeam'] = value[2]
+                                li['Pred1'] = value[5]
+                                li['Predtotalpointshome'] = value[6]
+                                li['Predtotalpoints'] = value[7]
+
+                            elif i == 1:
+                                li['Awayteam'] = value[0]
+                                li['Pred2'] = value[3]
+                                li['Predtotalpointsaway'] = value[4]
+                        except:
+                            pass
+
                 try:   
                     self.parse(li) 
                 except:
