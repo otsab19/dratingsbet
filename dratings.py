@@ -244,9 +244,16 @@ class DratingsBet():
             if 'Odds to Win' not in headers:
                 tab_tmp.remove(tab)
                 table = tab_tmp
+
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
         for index in range(len(table)):
             # particular tr
-            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th/text()')
+            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th')
             if len(headers) == 11:
                 data = html_sel.xpath(
                         '//table['+str(index+1)+']//tr[position()>2]')
@@ -266,7 +273,7 @@ class DratingsBet():
                     val_ele = html.fromstring(val_string)
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
-                    if headers == 11:
+                    if len(headers) == 11:
                         try:
                             li['sport'] = "Baseball"
                             li['League'] = league
@@ -306,10 +313,18 @@ class DratingsBet():
                 except:
                     pass
     def parse_ncaa_basketball(self, link, league):
+        pudb.set_trace()
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
         table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
+
         # tab_tmp = list(table)
         # for i, tab in enumerate(table):
         #     headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
@@ -338,12 +353,12 @@ class DratingsBet():
                         if i == 0:
                             li['Date'] = value[0]
                             li['Hometeam'] = value[2]
+                            li['Awayteam'] = value[4]
                             li['Pred1'] = value[6]
                             li['Predtotalpointshome'] = value[7]
                             li['Predtotalpoints'] = value[8]
 
                         elif i == 1:
-                            li['Awayteam'] = value[4]
                             li['Pred2'] = value[1]
                             li['Predtotalpointsaway'] = value[2]
 
@@ -358,6 +373,13 @@ class DratingsBet():
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
         table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
+
         # tab_tmp = list(table)
         # for i, tab in enumerate(table):
         #     headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
@@ -367,7 +389,7 @@ class DratingsBet():
         for index in range(len(table)):
             # particular tr
             data = html_sel.xpath(
-                        '//table['+str(index+1)+']//tr[position()>1]')
+                        '//table['+str(index+1)+']//tr[position()>2]')
             td = []
             for i in range(len(data)//2):
                 t = []
@@ -415,7 +437,7 @@ class DratingsBet():
                 table = tab_tmp
         for index in range(len(table)):
             # particular tr
-            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th/text()')
+            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th')
             if len(headers) == 11:
                 data = html_sel.xpath(
                         '//table['+str(index+1)+']//tr[position()>2]')
@@ -437,7 +459,7 @@ class DratingsBet():
                     print(value)
                     if len(headers) == 11:
                         try:
-                            li['sport'] = "Socer"
+                            li['sport'] = "Soccer"
                             li['League'] = league
                             if i == 0:
                                 li['Date'] = value[0]
@@ -457,7 +479,7 @@ class DratingsBet():
 
                     else:
                         try:
-                            li['sport'] = "Socer"
+                            li['sport'] = "Soccer"
                             li['League'] = league
                             if i == 0:
                                 li['Date'] = value[0]
@@ -485,6 +507,13 @@ class DratingsBet():
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
         table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
+
         # tab_tmp = list(table)
         # for i, tab in enumerate(table):
         #     headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
@@ -528,6 +557,55 @@ class DratingsBet():
                     self.parse(li) 
                 except:
                     pass
+    def parse_australia_soccer(self, link, league):
+        res = requests.get(link)
+        html_sel = html.fromstring(res.content)
+        # check tables for prediction table
+        table = html_sel.xpath('//table')
+        tab_tmp = list(table)
+        for i, tab in enumerate(table):
+            headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
+            if 'Odds to Win' not in headers:
+                tab_tmp.remove(tab)
+                table = tab_tmp
+        for index in range(len(table)):
+            # particular tr
+            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th/text()')
+            data = html_sel.xpath(
+                        '//table['+str(index+1)+']//tr[position()>1]') 
+            td = []
+            for i in range(len(data)//3):
+                t = []
+                t = data[i*2:i*2+2:1]
+                td.append(t)
+            for node in td:
+                li = {}
+                for i, nod in enumerate(node):
+                    val_string = etree.tostring(nod)
+                    val_ele = html.fromstring(val_string)
+                    value = val_ele.xpath('//tr//td//text()')
+                    print(value)
+                    try:
+                        li['sport'] = "Soccer"
+                        li['League'] = league
+                        if i == 0:
+                            li['Date'] = value[0]
+                            li['Awayteam'] = value[2]
+                            li['Pred1'] = value[3]
+                            li['Predtotalpointshome'] = value[4]
+                            li['Predtotalpoints'] = value[5]
+
+                        elif i == 1:
+                            li['Hometeam'] = value[0]
+                            li['Pred2'] = value[1]
+                            li['Predtotalpointsaway'] = value[2]
+                    except:
+                        pass       
+
+                try:   
+                    self.parse(li) 
+                except:
+                    pass
 
     def parse(self, li):
         pudb.set_trace()
@@ -535,9 +613,9 @@ class DratingsBet():
         Match = SubElement(root, 'Match')
         Source = SubElement(Match, 'Source')
         Source.text = "Dratings"
-        Sport = SubElement(Match, 'Sport')
+        # Sport = SubElement(Match, 'Sport')
         # Date = SubElement(Match, 'Date')
-        Sport.text = li['sport']
+        # Sport.text = li['sport']
         for elem in li:
             xml_attr = SubElement(Match, elem)
             xml_attr.text = li[elem]
