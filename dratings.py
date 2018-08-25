@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import pudb
 import os
 import re
 import sys
@@ -623,7 +622,6 @@ class DratingsBet():
         # Sport.text = li['sport']
         for elem in li:
             if elem == 'Date':
-                pudb.set_trace()
                 date = prse(li[elem])
                 date = date.date().strftime('%Y-%m-%d')
                 xml_attr = SubElement(Match, elem)
@@ -633,15 +631,24 @@ class DratingsBet():
                 xml_attr.text = li[elem]
         filename = li['Hometeam']+'-'+li['Awayteam']
         try:
-            PATH = os.path.join(os.getcwd(), li['sport'])
-            os.makedirs(PATH)
+            Prediction_PATH = os.path.join(os.getcwd(), 'Predictions')
+            os.makedirs(Prediction_PATH)
         except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+            if exc.errno == errno.EEXIST and os.path.isdir(Prediction_PATH):
+                pass
+            else:
+                raise
+
+        try:
+            sport_path = os.path.join(Prediction_PATH, li['sport'])
+            os.makedirs(sport_path)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(sport_path):
                 pass
             else:
                 raise
         try:
-            PATH = os.path.join(os.getcwd(), li['sport'], li['League'])
+            PATH = os.path.join(sport_path, li['League'])
             os.makedirs(PATH)
         except OSError as exc:
             if exc.errno == errno.EEXIST and os.path.isdir(PATH):
