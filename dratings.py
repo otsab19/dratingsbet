@@ -14,6 +14,7 @@ import datetime
 from datetime import timedelta
 import requests
 from bs4 import BeautifulSoup
+from dateutil.parser import parse as prse
 from dateutil.rrule import rrule, DAILY
 import errno
 from yattag import indent
@@ -621,8 +622,15 @@ class DratingsBet():
         # Date = SubElement(Match, 'Date')
         # Sport.text = li['sport']
         for elem in li:
-            xml_attr = SubElement(Match, elem)
-            xml_attr.text = li[elem]
+            if elem == 'Date':
+                pudb.set_trace()
+                date = prse(li[elem])
+                date = date.date().strftime('%Y-%m-%d')
+                xml_attr = SubElement(Match, elem)
+                xml_attr.text = date
+            else:
+                xml_attr = SubElement(Match, elem)
+                xml_attr.text = li[elem]
         filename = li['Hometeam']+'-'+li['Awayteam']
         try:
             PATH = os.path.join(os.getcwd(), li['sport'])
@@ -648,7 +656,7 @@ class DratingsBet():
 
 
 if __name__ == "__main__":
-    inp = input('Enter type')
+    inp = input('Enter type: ')
     if inp.lower() == "rank":
         rankings = DratingsBet()
         rankings.scrape_ratings_links()
@@ -656,4 +664,6 @@ if __name__ == "__main__":
         ratings = DratingsBet()
         ratings.scrape_links()
         ratings.start_requests()
-    
+    else:
+        print('Enter prediction or rank')
+        sys.exit()
