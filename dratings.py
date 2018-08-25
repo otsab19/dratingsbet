@@ -123,7 +123,6 @@ class DratingsBet():
 
     def start_requests(self):
         for links, league in zip(self.links, self.leagues):
-            pudb.set_trace()
             eval('self.' + self.map_league[league] +
                 '(' + '"' + links + '"' + ', ' + '"' + league + '"' + ')')
 
@@ -207,7 +206,12 @@ class DratingsBet():
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
                     try:
-                        li['sport'] = "Football"
+                        if 'basketball' in league.lower():
+                            li['sport'] = 'Basketball'
+                        elif 'hockey' in league.lower():
+                            li['sport'] = 'Hockey'
+                        else:
+                            li['sport'] = 'Football'
                         li['League'] = league
                         if i == 0:
                             li['Date'] = value[0]
@@ -313,7 +317,6 @@ class DratingsBet():
                 except:
                     pass
     def parse_ncaa_basketball(self, link, league):
-        pudb.set_trace()
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
@@ -405,6 +408,8 @@ class DratingsBet():
                     try:
                         li['sport'] = "Football"
                         li['League'] = league
+                        if 'basketball' in league.lower():
+                            li['sport'] = 'Basketball'
                         if i == 0:
                             li['Date'] = value[0]
                             li['Hometeam'] = value[2]
@@ -608,7 +613,6 @@ class DratingsBet():
                     pass
 
     def parse(self, li):
-        pudb.set_trace()
         root = Element('Matches')
         Match = SubElement(root, 'Match')
         Source = SubElement(Match, 'Source')
