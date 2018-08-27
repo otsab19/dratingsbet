@@ -396,9 +396,15 @@ class DratingsBet():
         #         tab_tmp.remove(tab)
         # table = tab_tmp
         for index in tmp_dict:
-            # particular tr
-            data = html_sel.xpath(
-                        '//table['+str(int(index)+1)+']//tr[position()>2]')
+            # particular tr 
+            headers = html_sel.xpath('//table['+str(index+1)+']//tr//th')
+            if len(headers) >= 10:
+                data = html_sel.xpath(
+                            '//table['+str(int(index)+1)+']//tr[position()>2]')
+            else:
+                data = html_sel.xpath(
+                            '//table['+str(int(index)+1)+']//tr[position()>1]')
+
             td = []
             for i in range(len(data)//2):
                 t = []
@@ -411,25 +417,47 @@ class DratingsBet():
                     val_ele = html.fromstring(val_string)
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
-                    try:
-                        li['sport'] = "Football"
-                        li['League'] = league
-                        if 'basketball' in league.lower():
-                            li['sport'] = 'Basketball'
-                        if i == 0:
-                            li['Date'] = value[0]
-                            li['Awayteam'] = value[2]
-                            li['PredAH0Away'] = value[6]
-                            li['Predtotalpointsaway'] = value[7]
-                            li['Predtotalpoints'] = value[8]
+                    if len(headers) >= 10:
+                        try:
+                            li['sport'] = "Football"
+                            li['League'] = league
+                            if 'basketball' in league.lower():
+                                li['sport'] = 'Basketball'
+                            if i == 0:
+                                li['Date'] = value[0]
+                                li['Awayteam'] = value[2]
+                                li['PredAH0Away'] = value[6]
+                                li['Predtotalpointsaway'] = value[7]
+                                li['Predtotalpoints'] = value[8]
 
-                        elif i == 1:
-                            li['Hometeam'] = value[0]
-                            li['PredAH0Home'] = value[4]
-                            li['Predtotalpointshome'] = value[5]
+                            elif i == 1:
+                                li['Hometeam'] = value[0]
+                                li['PredAH0Home'] = value[4]
+                                li['Predtotalpointshome'] = value[5]
 
-                    except:
-                        pass
+                        except:
+                            pass
+                    else:
+                        try:
+                            li['sport'] = "Football"
+                            li['League'] = league
+                            if 'basketball' in league.lower():
+                                li['sport'] = 'Basketball'
+                            if i == 0:
+                                li['Date'] = value[0]
+                                li['Awayteam'] = value[3]
+                                li['PredAH0Away'] = value[4]
+                                li['Predtotalpointsaway'] = value[5]
+                                li['Predtotalpoints'] = value[6]
+
+                            elif i == 1:
+                                li['Hometeam'] = value[0]
+                                li['PredAH0Home'] = value[1]
+                                li['Predtotalpointshome'] = value[2]
+
+                        except:
+                            pass
+
                 try:   
                     self.parse(li) 
                 except:
