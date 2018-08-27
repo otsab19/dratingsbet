@@ -355,8 +355,14 @@ class DratingsBet():
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
                     try:
+                        
                         li['sport'] = "Basketball"
-                        li['League'] = league
+                        if index == 1:
+                            li['League'] = 'NIT'
+                        elif index == 2:
+                            li['League'] = 'CBI & CIT'
+                        else:    
+                            li['League'] = league
                         if i == 0:
                             li['Date'] = value[0]
                             li['Awayteam'] = value[4]
