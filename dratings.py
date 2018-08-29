@@ -53,16 +53,20 @@ class DratingsBet():
         html_sel = html.fromstring(res.content)
         self.links = html_sel.xpath('//table[1]//tr//td/a/@href')
         self.leagues = html_sel.xpath('//table[1]//tr//td/a/text()')
-        date = html_sel.xpath('//*[@class="entry-content"]/p//span/text()')
-        date = [dt for dt in date if re.match(r'\d.*',dt)]
-        if date:
-            date = date[0]
-
+        
         for link, league in zip(self.links, self.leagues):
+               
             res = requests.get(link)
             html_sel = html.fromstring(res.content)
             tr = html_sel.xpath('//table[1]//tr[position()>1]')
             th = html_sel.xpath('//table[1]//tr/th//text()')
+            date = html_sel.xpath('//*[@class="entry-content"]/p//span/text()')
+            date = [dt for dt in date if re.match(r'\d.*',dt)]
+        if date:
+            date = date[0]
+            date = prse(date)
+            date = date.date().strftime('%Y-%m-%d')
+
             obj = {}
             for i, nod in enumerate(tr):
                 val_string = etree.tostring(nod)
@@ -74,15 +78,15 @@ class DratingsBet():
                     elif head == 'Country':
                         obj['Country'] = val
                     elif head == 'Rating':
-                        obj['ELOpointsDII'] = re.sub(r'\(.*\)', '', val)
+                        obj['ELOpointsDII'] = re.sub(r'\(.*\)', '', val).strip()
                     elif 'Inference' in head:
-                        obj['ELOpointsInference'] = re.sub(r'\(.*\)', '', val)
+                        obj['ELOpointsInference'] = re.sub(r'\(.*\)', '', val).strip()
                     elif 'Standard' in head:
-                        obj['ELOpointsStandard'] = re.sub(r'\(.*\)', '', val)
+                        obj['ELOpointsStandard'] = re.sub(r'\(.*\)', '', val).strip()
                     elif 'Aegis' in head:
-                        obj['ELOpointsAegis'] = re.sub(r'\(.*\)', '', val)
+                        obj['ELOpointsAegis'] = re.sub(r'\(.*\)', '', val).strip()
                     elif 'Vegas' in head:
-                        obj['ELOpointsVegas'] = re.sub(r'\(.*\)', '', val)
+                        obj['ELOpointsVegas'] = re.sub(r'\(.*\)', '', val).strip()
 
                     obj['Source'] = 'Dratings'
                     obj['Sport'] = league
@@ -90,7 +94,6 @@ class DratingsBet():
 
                 root = Element('Matches')
                 Match = SubElement(root, 'Match')
-
                 for elem in obj:
                     xml_attr = SubElement(Match, elem)
                     xml_attr.text = obj[elem]
@@ -130,6 +133,9 @@ class DratingsBet():
                 '(' + '"' + links + '"' + ', ' + '"' + league + '"' + ')')
 
     def parse_football(self, link, league):
+        import pudb
+        pudb.set_trace()
+                    
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
@@ -137,7 +143,7 @@ class DratingsBet():
         tab_tmp = list(table)
         for i, tab in enumerate(table):
             headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
-            if 'Odds to Win' not in headers:
+            if 'Odds to Win' not in headers and 'Odds in 90 Minutes' not in headers:
                 tab_tmp.remove(tab)
         table = tab_tmp
         for index in range(len(table)):
@@ -165,12 +171,19 @@ class DratingsBet():
                             li['Awayteam'] = value[1]
                             li['Pred1'] = value[4]
                             # li['HomeTeamML'] = value[5]
-                            li['Predtotalpointshome'] = value[6]
-                            li['Predtotalpoints'] = value[7]
+                            if len(value) == 8:
+                                li['Predtotalpointshome'] = value[7]
+                                li['Predtotalpoints'] = value[8]
+                            else:    
+                                li['Predtotalpointshome'] = value[6]
+                                li['Predtotalpoints'] = value[7]
                         elif i == 1:
+                            if len(value) == 5: 
+                                li['Predtotalpointsaway'] = value[4]
+                            else:
+                                li['Predtotalpointsaway'] = value[3]
                             li['Pred2'] = value[1]
                             # li['AwayTeamML'] = value[2]
-                            li['Predtotalpointsaway'] = value[3]
                         else:
                             li['PredX'] = value[1]
                             # li['DawML'] = value[2]
@@ -300,7 +313,7 @@ class DratingsBet():
                             li['sport'] = "Baseball"
                             li['League'] = league
                             if i == 0:
-                                li['Date'] = (datetime.datetime.now()-timedelta(days=11)).strftime('%Y-%M-%d') 
+                                li['Date'] = (datetime.datetime.now()+timedelta(days=1)).strftime('%Y-%M-%d') 
                                 li['Awayteam'] = value[2]
                                 li['PredAH0Away'] = value[5]
                                 li['Predtotalpointsaway'] = value[6]
@@ -365,8 +378,8 @@ class DratingsBet():
                             li['League'] = league
                         if i == 0:
                             li['Date'] = value[0]
-                            li['Awayteam'] = value[4]
-                            li['Hometeam'] = value[2]
+                            li['Awayteam'] = value[2]
+                            li['Hometeam'] = value[4]
                             li['PredAH0Away'] = value[6]
                             li['Predtotalpointsaway'] = value[7]
                             li['Predtotalpoints'] = value[8]
