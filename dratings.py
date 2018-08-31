@@ -60,12 +60,13 @@ class DratingsBet():
             html_sel = html.fromstring(res.content)
             tr = html_sel.xpath('//table[1]//tr[position()>1]')
             th = html_sel.xpath('//table[1]//tr/th//text()')
-            date = html_sel.xpath('//*[@class="entry-content"]/p//span/text()')
-            date = [dt for dt in date if re.match(r'\d.*',dt)]
-        if date:
-            date = date[0]
-            date = prse(date)
-            date = date.date().strftime('%Y-%m-%d')
+            #date = html_sel.xpath('//*[@class="entry-content"]/p//span/text()')
+            #date = [dt for dt in date if re.match(r'\d.*',dt)]
+        #if date:
+            #date = date[0]
+            #date = prse(date)
+            #date = date.date().strftime('%Y-%m-%d')
+            date = datetime.datetime.now().strftime("%Y-%m-%d")
 
             obj = {}
             for i, nod in enumerate(tr):
@@ -114,6 +115,15 @@ class DratingsBet():
                         pass
                     else:
                         raise
+                    try:
+                        PATH = os.path.join(PATH, date)
+                        os.makedirs(PATH)
+                    except OSError as exc:
+                        if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+                            pass
+                        else:
+                            raise
+
                 # convert to lxml element to string
                 root_string = tostring(root)
                 tree = ElementTree(root)
