@@ -183,11 +183,11 @@ class DratingsBet():
                             li['Pred1'] = value[4]
                             # li['HomeTeamML'] = value[5]
                             if len(value) == 8:
-                                li['Predtotalpointshome'] = value[7]
-                                li['Predtotalpoints'] = value[8]
-                            else:    
                                 li['Predtotalpointshome'] = value[6]
                                 li['Predtotalpoints'] = value[7]
+                            else:    
+                                li['Predtotalpointshome'] = value[7]
+                                li['Predtotalpoints'] = value[8]
                         elif i == 1:
                             if len(value) == 5: 
                                 li['Predtotalpointsaway'] = value[4]
