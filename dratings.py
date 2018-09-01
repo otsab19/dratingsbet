@@ -139,12 +139,13 @@ class DratingsBet():
 
     def start_requests(self):
         for links, league in zip(self.links, self.leagues):
-            eval('self.' + self.map_league[league] +
-                '(' + '"' + links + '"' + ', ' + '"' + league + '"' + ')')
-
+            league = league.replace("’"," ")
+            try:
+                eval('self.' + self.map_league[league] +
+                    '(' + '"' + links + '"' + ', ' + '"' + league + '"' + ')')
+            except:
+                pass
     def parse_football(self, link, league):
-        import pudb
-        pudb.set_trace()
                     
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
