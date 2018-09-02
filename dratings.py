@@ -98,7 +98,7 @@ class DratingsBet():
                 for elem in obj:
                     xml_attr = SubElement(Match, elem)
                     xml_attr.text = obj[elem]
-                    filename = obj['Teamname']+'- ratings'
+                    filename = obj['Teamname']+'- ratings' + '.xml'
                 try:
                     PATH = os.path.join(os.getcwd(), 'Rankings')
                     os.makedirs(PATH)
@@ -264,7 +264,10 @@ class DratingsBet():
                     self.parse(li) 
                 except:
                     pass
-    def parse_mlb_baseball(self, link, league):
+    def parse_mlb_baseball(self, link, league): 
+        import pudb
+        pudb.set_trace()
+        teams = eval(open('baseball.config','r').read()) 
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
@@ -307,14 +310,19 @@ class DratingsBet():
                             li['sport'] = "Baseball"
                             li['League'] = league
                             if i == 0:
-                                li['Date'] = datetime.datetime.now().strftime("%Y-%m-%d")
-                                li['Awayteam'] = value[1]
+                                date_x = '//table['+str(index+1)+']/preceding-sibling::h2/text()'
+                                date = html_sel.xpath(date_x)[0]
+                                date = re.sub('.*– ','',date)
+                                li['Date'] = prse(date).strftime("%Y-%m-%d")
+                                full_team_name = list(filter(lambda x: value[1] in x, teams))
+                                li['Awayteam'] = full_team_name[0]
                                 li['PredAH0Away'] = value[7]
                                 li['Predtotalpointsaway'] = value[8]
                                 li['Predtotalpoints'] = value[9]
 
                             elif i == 1:
-                                li['Hometeam'] = value[0]
+                                full_team_name = list(filter(lambda x:value[0] in x,teams))
+                                li['Hometeam'] = full_team_name[0]
                                 li['PredAH0Home'] = value[6]
                                 li['Predtotalpointshome'] = value[7]
                         except:
@@ -324,14 +332,20 @@ class DratingsBet():
                             li['sport'] = "Baseball"
                             li['League'] = league
                             if i == 0:
-                                li['Date'] = (datetime.datetime.now()+timedelta(days=1)).strftime('%Y-%M-%d') 
-                                li['Awayteam'] = value[2]
+                                date_x = '//table['+str(index+1)+']/preceding-sibling::h2/text()'
+                                date = html_sel.xpath(date_x)[0]
+                                date = re.sub('.*– ','',date)
+                                li['Date'] = prse(date).strftime("%Y-%m-%d")
+
+                                full_team_name = list(filter(lambda x:value[2] in x,teams))
+                                li['Awayteam'] = full_team_name[0]
                                 li['PredAH0Away'] = value[5]
                                 li['Predtotalpointsaway'] = value[6]
                                 li['Predtotalpoints'] = value[7]
 
                             elif i == 1:
-                                li['Hometeam'] = value[0]
+                                full_team_name = list(filter(lambda x:value[0] in x,teams))
+                                li['Hometeam'] = full_team_name[0]
                                 li['PredAH0Home'] = value[3]
                                 li['Predtotalpointshome'] = value[4]
                         except:
@@ -702,7 +716,7 @@ class DratingsBet():
             else:
                 xml_attr = SubElement(Match, elem)
                 xml_attr.text = li[elem]
-        filename = li['Hometeam']+' - '+li['Awayteam']
+        filename = li['Hometeam']+' - '+li['Awayteam'] + '.xml'
         try:
             Prediction_PATH = os.path.join(os.getcwd(), 'Predictions')
             os.makedirs(Prediction_PATH)
