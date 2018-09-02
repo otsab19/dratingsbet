@@ -115,14 +115,14 @@ class DratingsBet():
                         pass
                     else:
                         raise
-                    try:
-                        PATH = os.path.join(PATH, date)
-                        os.makedirs(PATH)
-                    except OSError as exc:
-                        if exc.errno == errno.EEXIST and os.path.isdir(PATH):
-                            pass
-                        else:
-                            raise
+                try:
+                    PATH = os.path.join(PATH, date)
+                    os.makedirs(PATH)
+                except OSError as exc:
+                    if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+                        pass
+                    else:
+                        raise
 
                 # convert to lxml element to string
                 root_string = tostring(root)
@@ -265,8 +265,6 @@ class DratingsBet():
                 except:
                     pass
     def parse_mlb_baseball(self, link, league): 
-        import pudb
-        pudb.set_trace()
         teams = eval(open('baseball.config','r').read()) 
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
