@@ -764,6 +764,8 @@ class DratingsBet():
                     pass
 
     def parse(self, li):
+        import pudb
+        pudb.set_trace()
         root = Element('Matches')
         Match = SubElement(root, 'Match')
         Source = SubElement(Match, 'Source')
@@ -804,7 +806,7 @@ class DratingsBet():
                 raise
         try:
             if 'Australian' in li['League']:
-                pass
+                league_path = sport_path
             else:
                 league_path = os.path.join(sport_path, li['League'])
                 os.makedirs(league_path)
