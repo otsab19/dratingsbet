@@ -125,6 +125,10 @@ class DratingsBet():
                     elif 'Aegis' in head:
                         obj['ELOpointsAegis'] = re.sub(
                             r'\(.*\)', '', text).strip()
+                    elif 'Division' in head:
+                        obj['Division'] = re.sub(
+                            r'\(.*\)', '', text).strip()
+
                     elif 'Vegas' in head:
                         obj['ELOpointsVegas'] = re.sub(
                             r'\(.*\)', '', text).strip()
