@@ -67,8 +67,6 @@ class DratingsBet():
         print(self.links)
 
     def scrape_ratings_links(self):
-        import pudb
-        pudb.set_trace()
         res = requests.get('https://www.dratings.com/')
         html_sel = html.fromstring(res.content)
         self.links = html_sel.xpath('//table[1]//tr//td/a/@href')
@@ -734,7 +732,7 @@ class DratingsBet():
             data = html_sel.xpath(
                 '//table[' + str(index + 1) + ']//tr[position()>1]')
             td = []
-            for i in range(len(data) // 3):
+            for i in range(len(data) // 2):
                 t = []
                 t = data[i * 2:i * 2 + 2:1]
                 td.append(t)
@@ -768,8 +766,6 @@ class DratingsBet():
                     pass
 
     def parse(self, li):
-        import pudb
-        pudb.set_trace()
         root = Element('Matches')
         Match = SubElement(root, 'Match')
         Source = SubElement(Match, 'Source')
