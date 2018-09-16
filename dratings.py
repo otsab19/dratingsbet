@@ -492,11 +492,16 @@ class DratingsBet():
         for i, tab in enumerate(table):
             headers = html_sel.xpath(
                 '//table[' + str(i + 1) + ']//tr//th/text()')
-            if 'Odds to Win' not in headers and 'Total Points' not in headers:
+            if 'Odds to Win' not in headers:
                 tab_tmp.remove(tab)
                 table = tab_tmp
+            elif 'DRatings Log Loss' in headers:    
+                tab_tmp.remove(tab)
+                table = tab_tmp
+
             else:
                 tmp_dict[i] = tab
+            
         # tab_tmp = list(table)
         # for i, tab in enumerate(table):
         #     headers = html_sel.xpath('//table['+str(i+1)+']//tr//th/text()')
