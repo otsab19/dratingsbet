@@ -123,7 +123,7 @@ class DratingsBet():
                         obj['ELOpointsAegis'] = re.sub(
                             r'\(.*\)', '', text).strip()
                     elif 'Division' in head:
-                        obj['Division'] = re.sub(
+                        obj['League'] = re.sub(
                             r'\(.*\)', '', text).strip()
 
                     elif 'Vegas' in head:
@@ -137,14 +137,14 @@ class DratingsBet():
                             r'\(.*\)', '', text).strip()
 
                     obj['Source'] = 'Dratings'
-                    obj['League'] = league
+                    # obj['League'] = league
                     try:
                         obj['Sport'] = self.sport[league] 
                     except:
                         if 'Basketball' in league:
                             obj['Sport'] = 'Basketball'
                         elif 'Baseball' in league:
-                            obj['Sport'] = 'Football'
+                            obj['Sport'] = 'Baseball'
                         elif 'Soccer' in league:
                             obj['Sport'] = 'Soccer'
                     obj['Date'] = date
@@ -164,13 +164,28 @@ class DratingsBet():
                     else:
                         raise
                 try:
-                    PATH = os.path.join(os.getcwd(), 'Rankings', obj['Sport'])
+                    if 'Australian' in league:
+                        PATH = os.path.join(PATH, 'Australian Football League')
+                    else:
+                        PATH = os.path.join(os.getcwd(), 'Rankings', obj['Sport'])
                     os.makedirs(PATH)
                 except OSError as exc:
                     if exc.errno == errno.EEXIST and os.path.isdir(PATH):
                         pass
                     else:
                         raise
+                try:
+                    if 'Australian' in league:
+                        pass
+                    else:
+                        PATH = os.path.join(PATH, league)
+                    os.makedirs(PATH)
+                except OSError as exc:
+                    if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+                        pass
+                    else:
+                        raise
+
                 try:
                     PATH = os.path.join(PATH, date)
                     os.makedirs(PATH)
@@ -499,13 +514,17 @@ class DratingsBet():
         for i, tab in enumerate(table):
             headers = html_sel.xpath(
                 '//table[' + str(i + 1) + ']//tr//th/text()')
+            check_double = html_sel.xpath('//table[' + str(i + 1) + ']')
+            if len(check_double) > 1:
+                if(len(html.fromstring(html.tostring(check_double[0])).xpath('//tr//th/text()'))< len(html.fromstring(html.tostring(check_double[1])).xpath('//tr//th/text()'))):
+                    headers =  html.fromstring(html.tostring(check_double[0])).xpath('//tr//th/text()')
+                else:
+                    headers = html.fromstring(html.tostring(check_double[1])).xpath('//tr//th/text()')
             if 'Odds to Win' not in headers:
                 tab_tmp.remove(tab)
                 table = tab_tmp
-            elif 'DRatings Log Loss' in headers:    
-                tab_tmp.remove(tab)
-                table = tab_tmp
-
+            elif 'Odds to Win' in headers and 'DRatings Log Loss' in headers:    
+                tmp_dict[i] = tab
             else:
                 tmp_dict[i] = tab
             
@@ -579,7 +598,10 @@ class DratingsBet():
                             pass
 
                 try:
-                    self.parse(li)
+                    if re.search(r'(\-|\+)[\d]*',li['Hometeam']) or re.search(r'(\-|\+)[\d]*',li['Awayteam']):
+                        pass
+                    else:
+                        self.parse(li)
                 except BaseException:
                     pass
 
