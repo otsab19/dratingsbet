@@ -73,7 +73,7 @@ class DratingsBet():
         self.leagues = html_sel.xpath('//table[1]//tr//td/a/text()')
 
         for link, league in zip(self.links, self.leagues):
-
+            self.sport = eval(open('rankings_mappings.config', 'r').read())
             res = requests.get(link)
             html_sel = html.fromstring(res.content)
             tr = html_sel.xpath('//table[1]//tr[position()>1]')
@@ -138,7 +138,8 @@ class DratingsBet():
                             r'\(.*\)', '', text).strip()
 
                     obj['Source'] = 'Dratings'
-                    obj['Sport'] = league
+                    obj['League'] = league
+                    obj['Sport'] = self.sport[league] 
                     obj['Date'] = date
 
                 root = Element('Matches')
@@ -387,7 +388,10 @@ class DratingsBet():
                             if i == 0:
                                 date_x = '//table[' + str(index + 1) + \
                                     ']/preceding-sibling::h2/text()'
-                                date = html_sel.xpath(date_x)[0]
+                                try:
+                                    date = html_sel.xpath(date_x)[1]
+                                except BaseException:
+                                    date = html_sel.xpath(date_x)[0]
                                 date = re.sub('.*– ', '', date)
                                 li['Date'] = prse(date).strftime("%Y-%m-%d")
 
@@ -488,7 +492,7 @@ class DratingsBet():
         for i, tab in enumerate(table):
             headers = html_sel.xpath(
                 '//table[' + str(i + 1) + ']//tr//th/text()')
-            if 'Odds to Win' not in headers:
+            if 'Odds to Win' not in headers and 'Total Points' not in headers:
                 tab_tmp.remove(tab)
                 table = tab_tmp
             else:
