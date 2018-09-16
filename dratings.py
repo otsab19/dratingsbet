@@ -50,7 +50,7 @@ class DratingsBet():
         self.links = []
         self.leagues = []
         self.map_league = json.load(open('leagues.config'))
-
+        self.sport = eval(open('rankings_mappings.config', 'r').read())
     def scrape_links(self):
         res = requests.get('https://www.dratings.com/')
         html_sel = html.fromstring(res.content)
@@ -73,7 +73,6 @@ class DratingsBet():
         self.leagues = html_sel.xpath('//table[1]//tr//td/a/text()')
 
         for link, league in zip(self.links, self.leagues):
-            self.sport = eval(open('rankings_mappings.config', 'r').read())
             res = requests.get(link)
             html_sel = html.fromstring(res.content)
             tr = html_sel.xpath('//table[1]//tr[position()>1]')
@@ -139,7 +138,15 @@ class DratingsBet():
 
                     obj['Source'] = 'Dratings'
                     obj['League'] = league
-                    obj['Sport'] = self.sport[league] 
+                    try:
+                        obj['Sport'] = self.sport[league] 
+                    except:
+                        if 'Basketball' in league:
+                            obj['Sport'] = 'Basketball'
+                        elif 'Baseball' in league:
+                            obj['Sport'] = 'Football'
+                        elif 'Soccer' in league:
+                            obj['Sport'] = 'Soccer'
                     obj['Date'] = date
 
                 root = Element('Matches')
