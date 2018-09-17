@@ -199,7 +199,7 @@ class DratingsBet():
                 root_string = tostring(root)
                 tree = ElementTree(root)
                 root_string = tostring(
-                    tree, xml_declaration=True, encoding='UTF-8')
+                    tree, encoding='UTF-8')
 
                 with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
                     print(filename)
@@ -865,7 +865,7 @@ class DratingsBet():
         # convert to lxml element to string
         root_string = tostring(root)
         tree = ElementTree(root)
-        root_string = tostring(tree, xml_declaration=True, encoding='UTF-8')
+        root_string = tostring(tree, encoding='UTF-8')
         with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
             print(filename)
             fl.write(indent(root_string.decode('utf-8')))
