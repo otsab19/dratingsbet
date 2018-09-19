@@ -148,7 +148,10 @@ class DratingsBet():
                         elif 'Soccer' in league:
                             obj['Sport'] = 'Soccer'
                     obj['Date'] = date
-
+                    if 'Legue' in obj:
+                        pass
+                    else:
+                        obj['League'] = league
                 root = Element('Matches')
                 Match = SubElement(root, 'Match')
                 for elem in obj:
