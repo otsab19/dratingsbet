@@ -869,9 +869,16 @@ class DratingsBet():
         root_string = tostring(root)
         tree = ElementTree(root)
         root_string = tostring(tree, encoding='UTF-8')
-        with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
-            print(filename)
-            fl.write(indent(root_string.decode('utf-8')))
+        if os.path.isfile(os.path.join(PATH,filename)):
+            os.rename(os.path.join(PATH, filename), os.path.join(PATH, filename)+'(1)')    
+            with open(os.path.join(PATH, filename+'(2)'), 'w', encoding="utf-8") as fl:
+                print(filename)
+                fl.write(indent(root_string.decode('utf-8')))
+        else:
+            with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
+                print(filename)
+                fl.write(indent(root_string.decode('utf-8')))
+        
 
 
 if __name__ == "__main__":
