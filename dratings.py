@@ -148,7 +148,7 @@ class DratingsBet():
                         elif 'Soccer' in league:
                             obj['Sport'] = 'Soccer'
                     obj['Date'] = date
-                    if 'Legue' in obj:
+                    if 'League' in obj:
                         pass
                     else:
                         obj['League'] = league
@@ -391,6 +391,7 @@ class DratingsBet():
                                 date = html_sel.xpath(date_x)[0]
                                 date = re.sub('.*– ', '', date)
                                 li['Date'] = prse(date).strftime("%Y-%m-%d")
+                                li['Time'] = value[0]
                                 full_team_name = list(
                                     filter(lambda x: value[1] in x, teams))
                                 li['Awayteam'] = full_team_name[0]
@@ -419,7 +420,7 @@ class DratingsBet():
                                     date = html_sel.xpath(date_x)[0]
                                 date = re.sub('.*– ', '', date)
                                 li['Date'] = prse(date).strftime("%Y-%m-%d")
-
+                                li['Time'] = value[0]
                                 full_team_name = list(
                                     filter(lambda x: value[2] in x, teams))
                                 li['Awayteam'] = full_team_name[0]
@@ -490,6 +491,7 @@ class DratingsBet():
                             li['League'] = league
                         if i == 0:
                             li['Date'] = value[0]
+                            li['Time'] = value[1]
                             li['Awayteam'] = value[2]
                             li['Hometeam'] = value[4]
                             li['PredAH0Away'] = value[6]
@@ -715,8 +717,14 @@ class DratingsBet():
         # table = tab_tmp
         for index in tmp_dict:
             # particular tr
-            data = html_sel.xpath(
-                '//table[' + str(index + 1) + ']//tr[position()>2]')
+
+            if len(headers) >= 9:
+                data = html_sel.xpath(
+                    '//table[' + str(index + 1) + ']//tr[position()>2]')
+            else:
+                data = html_sel.xpath(
+                    '//table[' + str(index + 1) + ']//tr[position()>1]')
+
             td = []
             for i in range(len(data) // 2):
                 t = []
@@ -729,23 +737,45 @@ class DratingsBet():
                     val_ele = html.fromstring(val_string)
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
-                    try:
-                        li['sport'] = "Hockey"
-                        li['League'] = league
-                        if i == 0:
-                            li['Date'] = value[0]
-                            li['Awayteam'] = value[2]
-                            li['PredAH0Away'] = value[6]
-                            li['Predtotalpointsaway'] = value[7]
-                            li['Predtotalpoints'] = value[8]
+                    if len(headers) >= 9:
 
-                        elif i == 1:
-                            li['Hometeam'] = value[0]
-                            li['PredAH0Home'] = value[4]
-                            li['Predtotalpointshome'] = value[5]
+                        try:
+                            li['sport'] = "Hockey"
+                            li['League'] = league
+                            if i == 0:
+                                li['Date'] = value[0]
+                                li['Time'] = value[1]
+                                li['Awayteam'] = value[2]
+                                li['predah0Away'] = value[6]
+                                li['predtotalpointsaway'] = value[7]
+                                li['predtotalpoints'] = value[8]
 
-                    except BaseException:
-                        pass
+                            elif i == 1:
+                                li['Hometeam'] = value[0]
+                                li['predah0Home'] = value[4]
+                                li['predtotalpointshome'] = value[5]
+
+                        except baseexception:
+                            pass
+                    else:
+                        try:
+                            li['sport'] = "Hockey"
+                            li['League'] = league
+                            if i == 0:
+                                li['Date'] = value[0]
+                                li['Awayteam'] = value[2]
+                                li['predah0Away'] = value[3]
+                                li['predtotalpointsaway'] = value[4]
+                                li['predtotalpoints'] = value[5]
+
+                            elif i == 1:
+                                li['Hometeam'] = value[0]
+                                li['predah0Home'] = value[1]
+                                li['predtotalpointshome'] = value[2]
+
+                        except baseexception:
+                            pass
+ 
                 try:
                     self.parse(li)
                 except BaseException:
@@ -869,16 +899,19 @@ class DratingsBet():
         root_string = tostring(root)
         tree = ElementTree(root)
         root_string = tostring(tree, encoding='UTF-8')
-        if os.path.isfile(os.path.join(PATH,filename)):
-            os.rename(os.path.join(PATH, filename), os.path.join(PATH, filename))    
-            with open(os.path.join(PATH, filename+'(1)'), 'w', encoding="utf-8") as fl:
+        #if os.path.isfile(os.path.join(PATH,filename)):
+        #    os.rename(os.path.join(PATH, filename), os.path.join(PATH, filename))    
+        #    with open(os.path.join(PATH, filename+'(1)'), 'w', encoding="utf-8") as fl:
+        #        print(filename)
+        #        fl.write(indent(root_string.decode('utf-8')))
+        #else:
+        #    with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
+        #        print(filename)
+        #        fl.write(indent(root_string.decode('utf-8')))
+        #
+        with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
                 print(filename)
                 fl.write(indent(root_string.decode('utf-8')))
-        else:
-            with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
-                print(filename)
-                fl.write(indent(root_string.decode('utf-8')))
-        
 
 
 if __name__ == "__main__":
