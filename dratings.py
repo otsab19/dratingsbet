@@ -37,6 +37,7 @@ HEADER_CANADA_FOOTBALL = [
     'Score Proj',
     'Total Goals']
 PATH = ''
+MLB_TEMP = []
 MAP = {
     'ncaa-football-predictions': 'ncaa(self)',
     'canadian-football-league-predictions': 'cflp(self)',
@@ -438,7 +439,7 @@ class DratingsBet():
                             pass
 
                 try:
-                    self.parse(li)
+                    self.parse_mlb(li)
                 except BaseException:
                     pass
 
@@ -717,6 +718,8 @@ class DratingsBet():
         # table = tab_tmp
         for index in tmp_dict:
             # particular tr
+            headers = html_sel.xpath(
+                '//table[' + str(i + 1) + ']//tr//th/text()')
 
             if len(headers) >= 9:
                 data = html_sel.xpath(
@@ -836,6 +839,86 @@ class DratingsBet():
                 except BaseException:
                     pass
 
+    def parse_mlb(self, li):
+        
+        filename = li['Hometeam'] + ' - ' + li['Awayteam'] + '.xml'
+        if list(filter(lambda x: x[0] == filename and x[1] == li['Date'] , MLB_TEMP)):
+            double_games = True
+        else:
+            double_games = False
+        root = Element('Matches')
+        Match = SubElement(root, 'Match')
+        Source = SubElement(Match, 'Source')
+        Source.text = "Dratings"
+        # Sport = SubElement(Match, 'Sport')
+        # Date = SubElement(Match, 'Date')
+        # Sport.text = li['sport']
+        for elem in li:
+            if elem == 'Date':
+                date = prse(li[elem])
+                date = date.date().strftime('%Y-%m-%d')
+                xml_attr = SubElement(Match, elem)
+                xml_attr.text = date
+            else:
+                xml_attr = SubElement(Match, elem)
+                xml_attr.text = li[elem]
+        MLB_TEMP.append((filename, li['Date']))
+        try:
+            Prediction_PATH = os.path.join(os.getcwd(), 'Predictions')
+            os.makedirs(Prediction_PATH)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(Prediction_PATH):
+                pass
+            else:
+                raise
+                
+        try:
+            if 'Australian' in li['League']:
+                sport_path = os.path.join(Prediction_PATH,
+                                          'Australian Football League')
+            else:
+                sport_path = os.path.join(Prediction_PATH, li['sport'])
+            os.makedirs(sport_path)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(sport_path):
+                pass
+            else:
+                raise
+        try:
+            if 'Australian' in li['League']:
+                league_path = sport_path
+            else:
+                league_path = os.path.join(sport_path, li['League'])
+                os.makedirs(league_path)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(league_path):
+                pass
+            else:
+                raise
+        try:
+            PATH = os.path.join(league_path, date)
+            os.makedirs(PATH)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(PATH):
+                pass
+            else:
+                raise
+
+        # convert to lxml element to string
+        root_string = tostring(root)
+        tree = ElementTree(root)
+        root_string = tostring(tree, encoding='UTF-8')
+        if double_games:
+            os.rename(os.path.join(PATH, filename), os.path.join(PATH, filename))    
+            with open(os.path.join(PATH, filename+'(1)'), 'w', encoding="utf-8") as fl:
+                print(filename)
+                fl.write(indent(root_string.decode('utf-8')))
+        else:
+            with open(os.path.join(PATH, filename), 'w', encoding="utf-8") as fl:
+                print(filename)
+                fl.write(indent(root_string.decode('utf-8')))
+        
+        
     def parse(self, li):
         root = Element('Matches')
         Match = SubElement(root, 'Match')
@@ -913,7 +996,7 @@ class DratingsBet():
                 print(filename)
                 fl.write(indent(root_string.decode('utf-8')))
 
-
+    
 if __name__ == "__main__":
     inp = input('Enter type: ')
     if inp.lower() == "rank":
