@@ -52,6 +52,10 @@ class DratingsBet():
         self.leagues = []
         self.map_league = json.load(open('leagues.config'))
         self.sport = eval(open('rankings_mappings.config', 'r').read())
+
+    def convert_12_24_format(time):
+        return datetime.strptime(time, '%I:%M %p').strftime("%H:%M")
+
     def scrape_links(self):
         res = requests.get('https://www.dratings.com/')
         html_sel = html.fromstring(res.content)
@@ -392,7 +396,7 @@ class DratingsBet():
                                 date = html_sel.xpath(date_x)[0]
                                 date = re.sub('.*– ', '', date)
                                 li['Date'] = prse(date).strftime("%Y-%m-%d")
-                                li['Time'] = value[0]
+                                li['Time'] = convert_12_24_format(value[0])
                                 full_team_name = list(
                                     filter(lambda x: value[1] in x, teams))
                                 li['Awayteam'] = full_team_name[0]
@@ -421,7 +425,7 @@ class DratingsBet():
                                     date = html_sel.xpath(date_x)[0]
                                 date = re.sub('.*– ', '', date)
                                 li['Date'] = prse(date).strftime("%Y-%m-%d")
-                                li['Time'] = value[0]
+                                li['Time'] = convert_12_24_format(value[0])
                                 full_team_name = list(
                                     filter(lambda x: value[2] in x, teams))
                                 li['Awayteam'] = full_team_name[0]
@@ -492,7 +496,7 @@ class DratingsBet():
                             li['League'] = league
                         if i == 0:
                             li['Date'] = value[0]
-                            li['Time'] = value[1]
+                            li['Time'] = convert_12_24_format(value[1])
                             li['Awayteam'] = value[2]
                             li['Hometeam'] = value[4]
                             li['PredAH0Away'] = value[6]
@@ -747,7 +751,7 @@ class DratingsBet():
                             li['League'] = league
                             if i == 0:
                                 li['Date'] = value[0]
-                                li['Time'] = value[1]
+                                li['Time'] = convert_12_24_format(value[1])
                                 li['Awayteam'] = value[2]
                                 li['predah0Away'] = value[6]
                                 li['predtotalpointsaway'] = value[7]
