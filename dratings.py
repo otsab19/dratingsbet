@@ -44,6 +44,8 @@ MAP = {
 
 }
 
+def convert_12_24_format(time):
+    return datetime.datetime.strptime(time, '%I:%M %p').strftime("%H:%M")
 
 class DratingsBet():
 
@@ -53,9 +55,7 @@ class DratingsBet():
         self.map_league = json.load(open('leagues.config'))
         self.sport = eval(open('rankings_mappings.config', 'r').read())
 
-    def convert_12_24_format(time):
-        return datetime.strptime(time, '%I:%M %p').strftime("%H:%M")
-
+    
     def scrape_links(self):
         res = requests.get('https://www.dratings.com/')
         html_sel = html.fromstring(res.content)
@@ -578,6 +578,7 @@ class DratingsBet():
                                 li['PredAH0Away'] = value[6]
                                 li['Predtotalpointsaway'] = value[7]
                                 li['Predtotalpoints'] = value[8]
+                                li['Time'] = convert_12_24_format(value[1])
 
                             elif i == 1:
                                 li['Hometeam'] = value[0]
@@ -593,6 +594,7 @@ class DratingsBet():
                             if 'basketball' in league.lower():
                                 li['sport'] = 'Basketball'
                             if i == 0:
+                                li['Time'] = convert_12_24_format(value[1])
                                 li['Date'] = value[0]
                                 li['Awayteam'] = value[3]
                                 li['PredAH0Away'] = value[4]
@@ -723,11 +725,15 @@ class DratingsBet():
         for index in tmp_dict:
             # particular tr
             headers = html_sel.xpath(
-                '//table[' + str(i + 1) + ']//tr//th/text()')
+                '//table[' + str(index + 1) + ']//tr//th//text()')
 
-            if len(headers) >= 9:
+            if len(headers) >= 7:
                 data = html_sel.xpath(
                     '//table[' + str(index + 1) + ']//tr[position()>2]')
+            elif 'Matchup' in headers:
+                data = html_sel.xpath(
+                    '//table[' + str(index + 1) + ']//tr[position()>1]')
+
             else:
                 data = html_sel.xpath(
                     '//table[' + str(index + 1) + ']//tr[position()>1]')
@@ -744,7 +750,7 @@ class DratingsBet():
                     val_ele = html.fromstring(val_string)
                     value = val_ele.xpath('//tr//td//text()')
                     print(value)
-                    if len(headers) >= 9:
+                    if len(headers) >= 7:
 
                         try:
                             li['sport'] = "Hockey"
@@ -772,6 +778,10 @@ class DratingsBet():
                                 li['Date'] = value[0]
                                 li['Awayteam'] = value[2]
                                 li['predah0Away'] = value[3]
+                                try:
+                                     li['Time'] = convert_12_24_format(value[0])
+                                except:
+                                    pass
                                 li['predtotalpointsaway'] = value[4]
                                 li['predtotalpoints'] = value[5]
 
