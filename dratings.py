@@ -45,6 +45,7 @@ MAP = {
 }
 
 def convert_12_24_format(time):
+    time = time.lstrip().lstrip('0')
     return datetime.datetime.strptime(time, '%I:%M %p').strftime("%H:%M")
 
 class DratingsBet():
@@ -448,6 +449,8 @@ class DratingsBet():
                     pass
 
     def parse_ncaa_basketball(self, link, league):
+        import pudb
+        pudb.set_trace()
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
