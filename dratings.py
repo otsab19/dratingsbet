@@ -449,8 +449,6 @@ class DratingsBet():
                     pass
 
     def parse_ncaa_basketball(self, link, league):
-        import pudb
-        pudb.set_trace()
         res = requests.get(link)
         html_sel = html.fromstring(res.content)
         # check tables for prediction table
