@@ -595,7 +595,10 @@ class DratingsBet():
                             if 'basketball' in league.lower():
                                 li['sport'] = 'Basketball'
                             if i == 0:
-                                li['Time'] = convert_12_24_format(value[1])
+                                try:
+                                    li['Time'] = convert_12_24_format(value[1])
+                                except:
+                                    pass
                                 li['Date'] = value[0]
                                 li['Awayteam'] = value[3]
                                 li['PredAH0Away'] = value[4]
