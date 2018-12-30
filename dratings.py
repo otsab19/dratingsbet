@@ -1000,6 +1000,7 @@ class DratingsBet():
         root_string = tostring(root)
         tree = ElementTree(root)
         root_string = tostring(tree, encoding='UTF-8')
+        filename = filename.replace('/', ' ')
         #if os.path.isfile(os.path.join(PATH,filename)):
         #    os.rename(os.path.join(PATH, filename), os.path.join(PATH, filename))    
         #    with open(os.path.join(PATH, filename+'(1)'), 'w', encoding="utf-8") as fl:
